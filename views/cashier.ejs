@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>แคชเชียร์ · <%= restaurant.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body class="staff-body">
+  <div class="staff-shell">
+    <header class="staff-top">
+      <h1><span class="staff-dot cash"></span>พนักงานแคชเชียร์</h1>
+      <nav>
+        <a href="/kitchen">ครัว</a>
+        <a href="/service">บริการ</a>
+        <a class="active" href="/cashier">แคชเชียร์</a>
+        <form action="/staff/logout" method="post" class="nav-logout"><button type="submit">ออก ⎋</button></form>
+      </nav>
+    </header>
+    <main class="cashier-content">
+      <% if(typeof notice !== "undefined" && notice){ %>
+        <div class="banner-warn">⚠️ <%= notice %></div>
+      <% } %>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>สถานะโต๊ะ</h2>
+          <div class="status-actions">
+            <div class="legend">
+              <span><i class="dot-vacant"></i>ว่าง</span>
+              <span><i class="dot-occupied"></i>ไม่ว่าง</span>
+            </div>
+            <form action="/cashier/toggle-mode" method="post">
+              <input type="hidden" name="selected" value="<%= selected||'' %>">
+              <button type="submit" class="<%= mode?'orange-btn':'blue-btn' %>">
+                <%= mode?'● กำลังเปลี่ยนสถานะโต๊ะ':'เปลี่ยนสถานะโต๊ะ' %>
+              </button>
+            </form>
+            <% if(mode && selected){ %>
+              <form action="/cashier/confirm-status" method="post">
+                <input type="hidden" name="table" value="<%= selected %>">
+                <button type="submit" class="green-btn">ยืนยันการเปลี่ยนสถานะ</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+        <div class="tables-grid">
+          <% tables.forEach(t=>{ %>
+            <% if(mode){ %>
+              <form class="table-form" action="/cashier/table-status" method="post">
+                <input type="hidden" name="table" value="<%= t.table_no %>">
+                <button class="table-tile <%= t.status==='ว่าง'?'vacant':'occupied' %> <%= selected===t.table_no?'selected':'' %>" type="submit">
+                  <b><%= String(t.table_no).padStart(2,'0') %></b>
+                  <span><%= t.status %></span>
+                </button>
+              </form>
+            <% } else { %>
+              <a class="table-tile <%= t.status==='ว่าง'?'vacant':'occupied' %> <%= selected===t.table_no?'selected':'' %>" href="/cashier?selected=<%= t.table_no %>">
+                <b><%= String(t.table_no).padStart(2,'0') %></b>
+                <span><%= t.status %></span>
+              </a>
+            <% } %>
+          <% }) %>
+        </div>
+        <% if(mode){ %>
+          <div class="hint">โหมดเปลี่ยนสถานะโต๊ะ: กดเลือกโต๊ะแล้วกด “ยืนยันการเปลี่ยนสถานะ” เพื่อสลับ ว่าง / ไม่ว่าง · หากปิดโหมดนี้ การกดโต๊ะจะเป็นการดูข้อมูลบิล</div>
+        <% } %>
+      </section>
+
+      <% if(selected){ %>
+        <section class="panel bill-panel">
+          <div class="panel-head">
+            <h2>ข้อมูลบิล — โต๊ะ <%= String(selected).padStart(2,"0") %></h2>
+          </div>
+          <% if(bill && bill.items.length){ %>
+            <div class="bill-lines">
+              <% bill.orders.forEach(order=>{ if(!order.items.length) return; %>
+                <div class="bill-order-head">
+                  <span>ออเดอร์ #<%= order.order_id %></span>
+                  <span class="bill-order-time">🕒 <%= order.time.clock %> · <%= order.time.ago %></span>
+                </div>
+                <% order.items.forEach(item=>{ let ads=[]; try{ads=JSON.parse(item.addons||"[]")}catch(e){} %>
+                  <div class="bill-line">
+                    <span><%= item.name %> × <%= item.quantity %>
+                      <% if(ads.length){ %><small><%= ads.map(a=>a.name).join(" · ") %></small><% } %>
+                    </span>
+                    <b><%= item.total_price %> ฿</b>
+                  </div>
+                <% }) %>
+              <% }) %>
+            </div>
+            <div class="bill-total"><span>ยอดรวม</span><b><%= bill.total %> ฿</b></div>
+            <% if(bill.allServed){ %>
+              <a class="blue-btn full-btn" href="/payment/<%= selected %>">รับชำระเงิน</a>
+            <% } else { %>
+              <div class="bill-wait">⏳ ยังปิดบิลไม่ได้ — ต้องเสิร์ฟอาหารครบทุกรายการก่อน</div>
+              <button class="blue-btn full-btn" type="button" disabled>รับชำระเงิน</button>
+            <% } %>
+          <% } else { %>
+            <div class="empty bill-empty">ยังไม่มีรายการอาหารของโต๊ะนี้</div>
+          <% } %>
+        </section>
+      <% } %>
+    </main>
+  </div>
+  <script>
+    // Real-time: อัปเดตทันทีเมื่อมีการเปลี่ยนแปลงออเดอร์/โต๊ะ (ผ่าน Server-Sent Events)
+    (function () {
+      var t, es;
+      function connect() {
+        try {
+          es = new EventSource('/events');
+          es.onmessage = function () { clearTimeout(t); t = setTimeout(function () { location.reload(); }, 300); };
+        } catch (e) { }
+      }
+      connect();
+      // ปิดการเชื่อมต่อทันทีก่อนเปลี่ยนหน้า กันเบราว์เซอร์ค้าง (จำกัดจำนวน connection ต่อเว็บ)
+      window.addEventListener('pagehide', function () { try { if (es) es.close(); } catch (e) { } });
+      window.addEventListener('beforeunload', function () { try { if (es) es.close(); } catch (e) { } });
+      // สำรอง: รีเฟรชทุก 60 วิ เผื่อการเชื่อมต่อ real-time หลุด
+      setInterval(function () { location.reload(); }, 60000);
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= restaurant.name %> · เลือกผู้ใช้งาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="role-shell">
+    <div class="role-brand">
+      <span class="brand-mark big">咲</span>
+      <h1><%= restaurant.name %></h1>
+      <p><%= restaurant.tagline %></p>
+    </div>
+    <div class="role-grid">
+      <a class="role-card customer" href="/menu?table=<%= table %>">
+        <div class="role-emoji">🍽️</div>
+        <h2>ลูกค้า</h2>
+        <p>ดูเมนูและสั่งอาหาร</p>
+        <span class="role-table">โต๊ะ <%= String(table).padStart(2,"0") %></span>
+      </a>
+      <a class="role-card staff" href="/staff">
+        <div class="role-emoji">👩‍🍳</div>
+        <h2>พนักงาน</h2>
+        <p>ครัว · บริการ · แคชเชียร์</p>
+        <span class="role-lock">🔒 ต้องใช้ PIN</span>
+      </a>
+    </div>
+    <p class="role-hint">แท็บเล็ตของแต่ละโต๊ะถูกตั้งค่าเลขโต๊ะไว้แล้ว — กด “ลูกค้า” เพื่อเริ่มสั่งอาหารได้เลย</p>
+  </div>
+</body>
+
+</html>

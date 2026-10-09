@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ปรับแต่ง · <%= menu.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">咲</span>
+        <span class="brand-text"><b><%= restaurant.name %></b><small><%= restaurant.tagline %></small></span>
+      </div>
+      <nav class="top-links">
+        <a href="/menu?table=<%= table %>">เมนู</a>
+        <a href="/orders?table=<%= table %>">รายการที่สั่ง</a>
+        <a class="cart-link" href="/cart?table=<%= table %>">ตะกร้า<% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <span class="table-pill">โต๊ะ <%= String(table).padStart(2,"0") %></span>
+      </nav>
+    </header>
+    <main class="content narrow">
+      <a class="back-link" href="/menu?table=<%= table %>">← กลับไปเลือกเมนู</a>
+      <div class="product-head">
+        <img src="<%= menu.image %>" alt="<%= menu.name %>">
+        <div>
+          <span class="product-cat"><%= menu.category %></span>
+          <h1><%= menu.name %></h1>
+          <div class="price"><%= menu.price %> บาท</div>
+        </div>
+      </div>
+      <form action="/add-to-cart" method="post" id="addonForm">
+        <input type="hidden" name="menu_id" value="<%= menu.menu_id %>">
+        <input type="hidden" name="table" value="<%= table %>">
+        <% groups.forEach((group,gi)=>{ %>
+          <section class="option-box">
+            <h2><%= group.type %>
+              <small class="addon-rule <%= group.multiple ? 'multi' : 'single' %>">
+                <%= group.multiple ? "เลือกได้หลายอย่าง" : "เลือกได้อย่างใดอย่างหนึ่ง" %>
+              </small>
+            </h2>
+            <div class="options">
+              <% group.options.forEach((option,oi)=>{ %>
+                <label class="option-row">
+                  <% if (option.multiple) { %>
+                    <input type="checkbox" name="addon_<%= gi %>" value="<%= option.addon_id %>" data-price="<%= option.extra_price %>">
+                  <% } else { %>
+                    <input type="radio" name="addon_single_<%= gi %>" value="<%= option.addon_id %>" data-price="<%= option.extra_price %>" <%= oi===0 ? 'checked' : '' %>>
+                  <% } %>
+                  <span class="option-name"><%= option.option_name %></span>
+                  <span class="option-price <%= option.extra_price ? '' : 'free' %>"><%= option.extra_price ? '+' + option.extra_price + ' บาท' : 'ฟรี' %></span>
+                </label>
+              <% }) %>
+            </div>
+          </section>
+        <% }) %>
+        <section class="option-box quantity-row">
+          <span>จำนวน</span>
+          <div class="qty-stepper">
+            <button type="button" class="qty-btn" data-step="-1">−</button>
+            <input type="number" name="quantity" id="qty" value="1" min="1" max="99">
+            <button type="button" class="qty-btn" data-step="1">+</button>
+          </div>
+        </section>
+        <div class="addon-actionbar">
+          <div class="addon-sum">รวม <strong id="sumPrice"><%= menu.price %></strong> บาท</div>
+          <button class="primary-btn" type="submit">เพิ่มลงตะกร้า</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      var base = <%= menu.price %>;
+      var form = document.getElementById('addonForm');
+      var qty = document.getElementById('qty');
+      var sum = document.getElementById('sumPrice');
+      function recalc() {
+        var add = 0;
+        form.querySelectorAll('input[data-price]').forEach(function (el) {
+          if ((el.type === 'checkbox' || el.type === 'radio') && el.checked) add += Number(el.dataset.price) || 0;
+        });
+        var q = Math.max(1, Math.min(99, Number(qty.value) || 1));
+        sum.textContent = (base + add) * q;
+      }
+      form.addEventListener('change', recalc);
+      document.querySelectorAll('.qty-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          qty.value = Math.max(1, Math.min(99, (Number(qty.value) || 1) + Number(b.dataset.step)));
+          recalc();
+        });
+      });
+      recalc();
+    })();
+  </script>
+  <script src="/public/customer.js"></script>
+</body>
+
+</html>

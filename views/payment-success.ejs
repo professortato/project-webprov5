@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ชำระเงินสำเร็จ · โต๊ะ <%= String(table).padStart(2,"0") %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body class="staff-body">
+  <div class="staff-shell">
+    <header class="staff-top no-print">
+      <h1><span class="staff-dot cash"></span>พนักงานแคชเชียร์</h1>
+    </header>
+    <main class="cashier-content">
+      <section class="panel success-panel">
+        <div class="checkmark">✓</div>
+        <h2>ชำระเงินสำเร็จ · ปิดบิลแล้ว</h2>
+
+        <div class="receipt" id="receipt">
+          <div class="receipt-top">
+            <div class="receipt-logo">咲</div>
+            <div class="receipt-name"><%= restaurant.name %></div>
+            <div class="receipt-sub"><%= restaurant.tagline %></div>
+          </div>
+          <div class="receipt-row"><span>โต๊ะ</span><b><%= String(table).padStart(2,"0") %></b></div>
+          <div class="receipt-row"><span>เวลา</span><b><%= paidAt.clock %></b></div>
+          <div class="receipt-row"><span>ช่องทาง</span><b><%= method %></b></div>
+          <div class="receipt-divider"></div>
+          <div class="receipt-row big"><span>ยอดรวม</span><b><%= total %> ฿</b></div>
+          <% if(method !== 'QR CODE'){ %>
+            <div class="receipt-row"><span>รับเงิน</span><b><%= received %> ฿</b></div>
+            <div class="receipt-row"><span>เงินทอน</span><b><%= change %> ฿</b></div>
+          <% } %>
+          <div class="receipt-divider"></div>
+          <div class="receipt-thanks">ขอบคุณที่ใช้บริการ 🙏</div>
+        </div>
+
+        <div class="success-status no-print">
+          <span>สถานะโต๊ะ <%= String(table).padStart(2,"0") %> ตอนนี้</span><b>ว่าง</b>
+        </div>
+        <div class="actions no-print">
+          <a class="blue-btn full-btn" href="/cashier">กลับหน้าสถานะโต๊ะ</a>
+          <button class="secondary-btn full-btn" type="button" onclick="window.print()">🖨️ พิมพ์ใบเสร็จ</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

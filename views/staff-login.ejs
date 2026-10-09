@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เข้าสู่ระบบพนักงาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="role-shell">
+    <div class="pin-card">
+      <div class="role-emoji">🔒</div>
+      <h1>เข้าสู่ระบบพนักงาน</h1>
+      <p>กรอก PIN เพื่อเข้าหน้าครัว / บริการ / แคชเชียร์</p>
+      <% if (error) { %><div class="error center"><%= error %></div><% } %>
+      <form action="/staff/login" method="post" class="pin-form">
+        <input type="hidden" name="next" value="<%= next %>">
+        <input type="password" name="pin" inputmode="numeric" autocomplete="off" placeholder="● ● ● ●" autofocus>
+        <button class="primary-btn full" type="submit">เข้าสู่ระบบ</button>
+      </form>
+      <a class="back-link dark" href="/">← กลับหน้าแรก</a>
+    </div>
+  </div>
+</body>
+
+</html>

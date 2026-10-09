@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>รับชำระเงิน · โต๊ะ <%= String(table).padStart(2,"0") %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+  <script src="/public/qrcode.min.js"></script>
+</head>
+
+<body class="staff-body">
+  <div class="staff-shell">
+    <header class="staff-top">
+      <h1><span class="staff-dot cash"></span>รับชำระเงิน</h1>
+      <nav><a href="/cashier?selected=<%= table %>">← กลับสถานะโต๊ะ</a></nav>
+    </header>
+    <main class="cashier-content">
+      <section class="panel payment-panel">
+        <div class="panel-head">
+          <h2>โต๊ะ <%= String(table).padStart(2,"0") %></h2>
+        </div>
+
+        <div class="pay-amount">
+          <span>ยอดที่ต้องชำระ</span>
+          <b><%= bill.total %> ฿</b>
+        </div>
+
+        <% if(query && query.error){ %>
+          <div class="error"><%= query.error %></div>
+        <% } %>
+
+        <div class="method-title">เลือกช่องทางชำระเงิน</div>
+        <div class="method-buttons">
+          <button type="button" class="method active" data-method="เงินสด">💵 เงินสด</button>
+          <button type="button" class="method" data-method="QR CODE">📱 QR พร้อมเพย์</button>
+        </div>
+
+        <form action="/payment/confirm" method="post" id="paymentForm">
+          <input type="hidden" name="table" value="<%= table %>">
+          <input type="hidden" name="method" id="method" value="เงินสด">
+
+          <!-- โหมดเงินสด -->
+          <div id="cashPane">
+            <div class="payment-row">
+              <label for="received">รับเงินมา</label>
+              <div class="received-wrap">
+                <input id="received" name="received" type="number" min="0" step="1"
+                  value="<%= query && query.received ? query.received : bill.total %>"> ฿
+              </div>
+            </div>
+            <div class="quick-cash">
+              <button type="button" data-cash="<%= bill.total %>">พอดี</button>
+              <button type="button" data-add="100">+100</button>
+              <button type="button" data-add="500">+500</button>
+              <button type="button" data-add="1000">+1000</button>
+              <button type="button" data-cash="0">ล้าง</button>
+            </div>
+            <div class="payment-row change-row">
+              <span>เงินทอน</span>
+              <strong id="change"><%= Math.max(0,(Number(query&&query.received||bill.total)-bill.total)) %> ฿</strong>
+            </div>
+          </div>
+
+          <!-- โหมด QR พร้อมเพย์ -->
+          <div id="qrPane" hidden>
+            <div class="qr-card">
+              <div class="qr-head">
+                <span class="qr-ppay">PromptPay</span>
+                <span><%= restaurant.name %></span>
+              </div>
+              <div class="qr-box"><div id="qrcode"></div></div>
+              <div class="qr-amount">สแกนเพื่อจ่าย <b><%= bill.total %> บาท</b></div>
+              <div class="qr-note">เมื่อลูกค้าโอนสำเร็จแล้ว จึงกดยืนยันการชำระเงิน</div>
+            </div>
+          </div>
+
+          <button class="blue-btn full-btn big" type="submit" id="confirmBtn">ยืนยันการชำระเงิน</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    var total = <%= bill.total %>;
+    var payload = <%- JSON.stringify(qrPayload || "") %>;
+    var received = document.getElementById('received');
+    var change = document.getElementById('change');
+    var methodInput = document.getElementById('method');
+    var cashPane = document.getElementById('cashPane');
+    var qrPane = document.getElementById('qrPane');
+    var confirmBtn = document.getElementById('confirmBtn');
+
+    function renderChange() {
+      change.textContent = Math.max(0, (Number(received.value) || 0) - total) + ' ฿';
+    }
+    received.addEventListener('input', renderChange);
+
+    document.querySelectorAll('.quick-cash button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (b.dataset.cash !== undefined) received.value = Number(b.dataset.cash);
+        else received.value = (Number(received.value) || 0) + Number(b.dataset.add);
+        renderChange();
+      });
+    });
+
+    // สร้าง QR จาก payload พร้อมเพย์
+    var qrDone = false;
+    function buildQR() {
+      if (qrDone || !payload || typeof QRCode === 'undefined') return;
+      new QRCode(document.getElementById('qrcode'), {
+        text: payload, width: 220, height: 220,
+        colorDark: '#111', colorLight: '#fff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      qrDone = true;
+    }
+
+    document.querySelectorAll('.method').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.method').forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+        var m = b.dataset.method;
+        methodInput.value = m;
+        if (m === 'QR CODE') {
+          cashPane.hidden = true; qrPane.hidden = false;
+          confirmBtn.textContent = 'ยืนยันว่าได้รับเงินแล้ว';
+          buildQR();
+        } else {
+          cashPane.hidden = false; qrPane.hidden = true;
+          confirmBtn.textContent = 'ยืนยันการชำระเงิน';
+        }
+      });
+    });
+
+    // ถ้า reload กลับมาหลัง error ของ QR ให้คงโหมด QR
+    <% if (query && query.method === 'QR CODE') { %>
+      document.querySelector('.method[data-method="QR CODE"]').click();
+    <% } %>
+  </script>
+</body>
+
+</html>

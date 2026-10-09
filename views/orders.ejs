@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>รายการที่สั่ง · <%= restaurant.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">咲</span>
+        <span class="brand-text"><b><%= restaurant.name %></b><small><%= restaurant.tagline %></small></span>
+      </div>
+      <nav class="top-links">
+        <a href="/menu?table=<%= table %>">เมนู</a>
+        <a class="active" href="/orders?table=<%= table %>">รายการที่สั่ง</a>
+        <a class="cart-link" href="/cart?table=<%= table %>">ตะกร้า<% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <span class="table-pill">โต๊ะ <%= String(table).padStart(2,"0") %></span>
+      </nav>
+    </header>
+    <main class="content narrow">
+      <% if(placed){ %>
+        <div class="banner-success">✓ ส่งออเดอร์เข้าครัวเรียบร้อยแล้ว กำลังเตรียมอาหารให้คุณ</div>
+      <% } %>
+      <div class="section-title">
+        <h1>รายการที่สั่ง</h1>
+        <a class="outline-btn sm" href="/menu?table=<%= table %>">สั่งเพิ่ม</a>
+      </div>
+      <% if(!orders.length){ %>
+        <div class="empty">
+          <div class="empty-emoji">🍵</div>
+          <p>ยังไม่มีรายการสั่งอาหาร</p>
+          <a class="primary-btn" href="/menu?table=<%= table %>">เริ่มสั่งอาหาร</a>
+        </div>
+      <% } %>
+      <% orders.forEach(order=>{ %>
+        <article class="order-history">
+          <div class="order-head">
+            <div class="order-id">
+              <b>ออเดอร์ #<%= order.order_id %></b>
+              <span class="order-time">🕒 <%= order.time.clock %> · <%= order.time.ago %></span>
+            </div>
+            <span class="status status-<%= order.status==='กำลังทำ'?'cooking':order.status==='พร้อมเสิร์ฟ'?'ready':order.status==='เสิร์ฟแล้ว'?'served':'paid' %>">
+              <%= order.status %>
+            </span>
+          </div>
+          <% order.items.forEach(item=>{ let ads=[]; try{ads=JSON.parse(item.addons||"[]")}catch(e){} %>
+            <div class="order-line">
+              <span><%= item.name %> × <%= item.quantity %>
+                <% if(ads.length){ %><small><%= ads.map(a=>a.name).join(", ") %></small><% } %>
+              </span>
+              <b><%= item.total_price %> บาท</b>
+            </div>
+          <% }) %>
+          <div class="order-total">รวม <%= order.total %> บาท</div>
+        </article>
+      <% }) %>
+    </main>
+  </div>
+
+  <%- include("_floatingcart", { table: table }) %>
+  <script>
+    // Real-time: อัปเดตทันทีเมื่อมีการเปลี่ยนแปลงออเดอร์/โต๊ะ (ผ่าน Server-Sent Events)
+    (function () {
+      var t, es;
+      function connect() {
+        try {
+          es = new EventSource('/events');
+          es.onmessage = function () { clearTimeout(t); t = setTimeout(function () { location.reload(); }, 300); };
+        } catch (e) { }
+      }
+      connect();
+      // ปิดการเชื่อมต่อทันทีก่อนเปลี่ยนหน้า กันเบราว์เซอร์ค้าง (จำกัดจำนวน connection ต่อเว็บ)
+      window.addEventListener('pagehide', function () { try { if (es) es.close(); } catch (e) { } });
+      window.addEventListener('beforeunload', function () { try { if (es) es.close(); } catch (e) { } });
+      // สำรอง: รีเฟรชทุก 60 วิ เผื่อการเชื่อมต่อ real-time หลุด
+      setInterval(function () { location.reload(); }, 60000);
+    })();
+  </script>
+  <script src="/public/customer.js"></script>
+</body>
+
+</html>

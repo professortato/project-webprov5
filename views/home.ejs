@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= restaurant.name %> · เมนูอาหาร</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">咲</span>
+        <span class="brand-text"><b><%= restaurant.name %></b><small><%= restaurant.tagline %></small></span>
+      </div>
+      <nav class="top-links">
+        <a class="active" href="/menu?table=<%= table %>">เมนู</a>
+        <a href="/orders?table=<%= table %>">รายการที่สั่ง</a>
+        <a class="cart-link" href="/cart?table=<%= table %>">ตะกร้า<% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <span class="table-pill">โต๊ะ <%= String(table).padStart(2,"0") %></span>
+      </nav>
+    </header>
+    <main class="content">
+      <div class="hero-row">
+        <div>
+          <h1>เมนูอาหาร</h1>
+          <p>เลือกอาหารอร่อยๆ สำหรับโต๊ะ <strong><%= String(table).padStart(2,"0") %></strong></p>
+        </div>
+      </div>
+
+      <div class="cat-nav">
+        <% categories.forEach(category=>{ if(menus.some(m=>m.category===category)){ %>
+          <a href="#cat-<%= encodeURIComponent(category) %>"><%= category %></a>
+        <% }}) %>
+      </div>
+
+      <% categories.forEach(category=>{ const categoryMenus=menus.filter(m=>m.category===category);
+        if(!categoryMenus.length) return; %>
+        <section class="category" id="cat-<%= encodeURIComponent(category) %>">
+          <h2><%= category %></h2>
+          <div class="menu-grid">
+            <% categoryMenus.forEach(menu=>{ %>
+              <article class="menu-card">
+                <div class="menu-thumb">
+                  <img src="<%= menu.image %>" alt="<%= menu.name %>" loading="lazy">
+                </div>
+                <div class="menu-info">
+                  <div class="menu-meta">
+                    <b><%= menu.name %></b>
+                    <span><%= menu.price %> บาท</span>
+                  </div>
+                  <a class="add-button" href="/addon?menu_id=<%= menu.menu_id %>&table=<%= table %>" aria-label="เพิ่ม <%= menu.name %>">+</a>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        </section>
+      <% }) %>
+    </main>
+  </div>
+
+  <%- include("_floatingcart", { table: table }) %>
+
+  <% if (added) { %>
+    <div class="toast" id="toast">✓ เพิ่ม <b><%= added %></b> ลงตะกร้าแล้ว</div>
+    <script>
+      setTimeout(function(){ var t=document.getElementById('toast'); if(t){ t.classList.add('hide'); } }, 2600);
+    </script>
+  <% } %>
+  <script src="/public/customer.js"></script>
+</body>
+
+</html>

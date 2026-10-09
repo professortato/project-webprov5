@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เลือกแผนก · <%= restaurant.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="role-shell">
+    <div class="role-brand">
+      <span class="brand-mark big">咲</span>
+      <h1>พนักงาน</h1>
+      <p>เลือกแผนกที่ต้องการเข้าใช้งาน</p>
+    </div>
+    <div class="role-grid three">
+      <a class="role-card dept cook" href="/kitchen">
+        <div class="role-emoji">👨‍🍳</div>
+        <h2>ครัว</h2>
+        <p>รับออเดอร์ · ทำอาหาร</p>
+      </a>
+      <a class="role-card dept serve" href="/service">
+        <div class="role-emoji">🍽️</div>
+        <h2>บริการ</h2>
+        <p>เสิร์ฟอาหารให้ลูกค้า</p>
+      </a>
+      <a class="role-card dept cash" href="/cashier">
+        <div class="role-emoji">💵</div>
+        <h2>แคชเชียร์</h2>
+        <p>สถานะโต๊ะ · ชำระเงิน</p>
+      </a>
+    </div>
+    <div class="role-foot">
+      <a class="back-link dark" href="/">← หน้าแรก</a>
+      <form action="/staff/logout" method="post"><button class="secondary-btn" type="submit">ออกจากระบบพนักงาน</button></form>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+<% if (typeof cartCount !== "undefined" && cartCount > 0) { %>
+  <a class="floating-cart" href="/cart?table=<%= table %>">
+    <span class="fc-icon">🛒<span class="fc-count"><%= cartCount %></span></span>
+    <span class="fc-text">ดูตะกร้า</span>
+    <span class="fc-total"><%= cartTotal %> ฿</span>
+  </a>
+<% } %>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>บริการ · <%= restaurant.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body class="staff-body">
+  <div class="staff-shell">
+    <header class="staff-top">
+      <h1><span class="staff-dot serve"></span>พนักงานบริการ</h1>
+      <nav>
+        <a href="/kitchen">ครัว</a>
+        <a class="active" href="/service">บริการ</a>
+        <a href="/cashier">แคชเชียร์</a>
+        <form action="/staff/logout" method="post" class="nav-logout"><button type="submit">ออก ⎋</button></form>
+      </nav>
+    </header>
+    <main class="staff-content">
+      <div class="staff-head-row">
+        <h2>อาหารพร้อมเสิร์ฟ</h2>
+        <span class="count-pill"><%= orders.length %> ออเดอร์</span>
+      </div>
+      <% if(!orders.length){ %>
+        <div class="staff-empty">
+          <div class="empty-emoji">🍽️</div>
+          ยังไม่มีอาหารที่พร้อมเสิร์ฟ
+        </div>
+      <% } else { %>
+        <div class="order-board">
+          <% orders.forEach(order=>{ %>
+            <article class="work-card ready <%= order.time.mins>=15?'urgent':(order.time.mins>=8?'warn':'') %>">
+              <div class="work-title">
+                <span class="wt-table">โต๊ะ <%= String(order.table_no).padStart(2,"0") %></span>
+                <span class="wt-id">#<%= order.order_id %></span>
+              </div>
+              <div class="work-time">🕒 สั่งเมื่อ <%= order.time.clock %> · <%= order.time.ago %></div>
+              <ul>
+                <% order.items.forEach(item=>{ let ads=[]; try{ads=JSON.parse(item.addons||"[]")}catch(e){} %>
+                  <li>
+                    <span class="li-name"><%= item.name %></span>
+                    <span class="li-qty">× <%= item.quantity %></span>
+                    <% if(ads.length){ %><small><%= ads.map(a=>a.name).join(" · ") %></small><% } %>
+                  </li>
+                <% }) %>
+              </ul>
+              <form action="/service/served" method="post">
+                <input type="hidden" name="order_id" value="<%= order.order_id %>">
+                <button class="green-btn full" type="submit">เสิร์ฟแล้ว</button>
+              </form>
+            </article>
+          <% }) %>
+        </div>
+      <% } %>
+    </main>
+  </div>
+  <script>
+    // Real-time: อัปเดตทันทีเมื่อมีการเปลี่ยนแปลงออเดอร์/โต๊ะ (ผ่าน Server-Sent Events)
+    (function () {
+      var t, es;
+      function connect() {
+        try {
+          es = new EventSource('/events');
+          es.onmessage = function () { clearTimeout(t); t = setTimeout(function () { location.reload(); }, 300); };
+        } catch (e) { }
+      }
+      connect();
+      // ปิดการเชื่อมต่อทันทีก่อนเปลี่ยนหน้า กันเบราว์เซอร์ค้าง (จำกัดจำนวน connection ต่อเว็บ)
+      window.addEventListener('pagehide', function () { try { if (es) es.close(); } catch (e) { } });
+      window.addEventListener('beforeunload', function () { try { if (es) es.close(); } catch (e) { } });
+      // สำรอง: รีเฟรชทุก 60 วิ เผื่อการเชื่อมต่อ real-time หลุด
+      setInterval(function () { location.reload(); }, 60000);
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ตะกร้าอาหาร · <%= restaurant.name %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/style.css">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">咲</span>
+        <span class="brand-text"><b><%= restaurant.name %></b><small><%= restaurant.tagline %></small></span>
+      </div>
+      <nav class="top-links">
+        <a href="/menu?table=<%= table %>">เมนู</a>
+        <a href="/orders?table=<%= table %>">รายการที่สั่ง</a>
+        <a class="cart-link active" href="/cart?table=<%= table %>">ตะกร้า<% if (cartCount > 0) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <span class="table-pill">โต๊ะ <%= String(table).padStart(2,"0") %></span>
+      </nav>
+    </header>
+    <main class="content narrow">
+      <a class="back-link" href="/menu?table=<%= table %>">← เลือกอาหารเพิ่ม</a>
+      <div class="section-title">
+        <h1>ตะกร้าอาหาร</h1>
+        <span class="pill-count"><%= cart.length %> รายการ</span>
+      </div>
+      <% if(!cart.length){ %>
+        <div class="empty">
+          <div class="empty-emoji">🍜</div>
+          <p>ยังไม่มีรายการอาหารในตะกร้า</p>
+          <a class="primary-btn" href="/menu?table=<%= table %>">เลือกอาหาร</a>
+        </div>
+      <% } else { %>
+        <div class="cart-list">
+          <% cart.forEach(item=>{ %>
+            <article class="cart-card">
+              <img src="<%= item.image %>" alt="<%= item.name %>">
+              <div class="cart-main">
+                <h2><%= item.name %> <span class="cart-qty">× <%= item.quantity %></span></h2>
+                <div class="cart-base">อาหาร <%= item.base_price %> บาท</div>
+                <% if(item.addons.length){ %>
+                  <div class="addons">
+                    <% item.addons.forEach(a=>{ %>
+                      <span class="addon-chip"><%= a.name %><%= a.price ? ' +' + a.price : '' %></span>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+              <div class="cart-price">
+                <b><%= item.total_price %> ฿</b>
+                <form action="/remove-from-cart" method="post">
+                  <input type="hidden" name="cart_id" value="<%= item.cart_id %>">
+                  <input type="hidden" name="table" value="<%= table %>">
+                  <button class="danger-btn" type="submit">ลบ</button>
+                </form>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+        <div class="total-box">
+          <div class="total-row"><span>ยอดรวมทั้งหมด</span><strong><%= total %> บาท</strong></div>
+          <div class="actions">
+            <form action="/clear-cart" method="post">
+              <input type="hidden" name="table" value="<%= table %>">
+              <button class="secondary-btn" type="submit">ล้างตะกร้า</button>
+            </form>
+            <form action="/confirm-order" method="post">
+              <input type="hidden" name="table" value="<%= table %>">
+              <button class="primary-btn" type="submit">ยืนยันการสั่งอาหาร</button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </main>
+  </div>
+  <script src="/public/customer.js"></script>
+</body>
+
+</html>
