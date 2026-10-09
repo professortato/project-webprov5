@@ -320,7 +320,7 @@ h1, h2, .brand-text b { font-family: "Noto Serif Thai", "Noto Sans Thai", serif 
 @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-14px) } to { opacity: 1; transform: translateX(-50%) translateY(0) } }
 
 /* ===================== STAFF SHARED ===================== */
-.staff-body { background: var(--bg-staff) }
+.staff-body { background: var(--bg-staff); display: flow-root }
 .staff-shell { width: min(1200px, 94%); margin: 24px auto 60px }
 .staff-top {
   display: flex; align-items: center; justify-content: space-between; gap: 14px;
