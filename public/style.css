@@ -468,7 +468,7 @@ h1, h2, .brand-text b { font-family: "Noto Serif Thai", "Noto Sans Thai", serif 
 .success-status { display: flex; justify-content: space-between; align-items: center; padding: 20px 2px 6px; font-size: 14px }
 .success-status b { background: #e6e1da; color: #5f564d; border-radius: 10px; padding: 8px 26px; font-weight: 700 }
 .success-panel .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 14px }
-.success-panel .actions > * { width: 100% }
+.success-panel .actions > * { width: 100%; margin: 0 }
 
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 1000px) {
